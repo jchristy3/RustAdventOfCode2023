@@ -54,15 +54,15 @@ fn get_sum_calibration(input: &str, part_num: &str) -> i32 {
 }
 
 fn get_possible_game_sum(input: &str, part_num: &str) -> i32 {
-    let mut game_number_sum = 0; //our resulting value
-    let mut expected_sum = HashMap::new();
-    expected_sum.insert(String::from("red"), 12);
-    expected_sum.insert(String::from("green"), 13);
-    expected_sum.insert(String::from("blue"), 14);
+    let mut game_number_sum: i32 = 0; //our resulting value
+    let mut expected_sum: HashMap<&str, &i32> = HashMap::new();
+    expected_sum.insert("red", &12);
+    expected_sum.insert("green", &13);
+    expected_sum.insert("blue", &14);
 
-    let mut actual_sum = HashMap::new();
+    let mut actual_sum: HashMap<&str, i32> = HashMap::new();
     for line in input.lines() {
-        let colon_position = line.chars().find(|c| c == ':').unwrap();
+        let colon_position = line.chars().position(|c| c == ':').unwrap();
         let game_number = &line[5..colon_position];
         let rounds = line.split("; ").collect::<Vec<&str>>();
         
@@ -72,10 +72,10 @@ fn get_possible_game_sum(input: &str, part_num: &str) -> i32 {
             for color_sum in color_sums.iter() {
                 let space_position = color_sum.chars().position(|w| w == ' ').unwrap();
                 let color = &color_sum[..space_position];
-                let total = &color_sum[space_position + 1..].parse::<i32>().unwrap();
+                let total = color_sum[space_position + 1..].parse::<i32>().unwrap();
 
                 if actual_sum.contains_key(color) {
-                    actual_sum.get(color) = actual_sum + total;
+                    actual_sum.insert(color, total + actual_sum[color]);
                 } else {
                     actual_sum.insert(color, total);
                 }
@@ -83,14 +83,12 @@ fn get_possible_game_sum(input: &str, part_num: &str) -> i32 {
         }
 
         //compare actual to expected
-        for (key, value) in &expected_sum {
-            if actual_sum.contains_key(key) {
-                if actual_sum.get(key) == value {
-                    game_number_sum += game_number.parse::<i32>().unwrap();
-                }
+        for (key, value) in expected_sum {
+            if actual_sum[key] == *value {
+                game_number_sum += game_number.parse::<i32>().unwrap();
             }
         }
-
-        return game_number_sum;
     }
+
+    game_number_sum
 }
